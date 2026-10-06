@@ -1,22 +1,25 @@
-require('dotenv').config();
+require("dotenv").config();
 
 const express = require("express");
-const dotenv = require("dotenv");
 const path = require("path");
 const hbs = require("hbs");
 const session = require("express-session");
-const { MongoStore } = require("connect-mongo");
+const { MongoStore } = require("connect-mongo"); // connect-mongo v6+. On v5 or older: const MongoStore = require("connect-mongo");
 const bcrypt = require("bcryptjs");
 
-dotenv.config();
 require("./db/conn");
 const User = require("./models/user");
 
 const app = express();
 const port = process.env.PORT || 3000;
+const isProd = process.env.NODE_ENV === "production";
+
 const static_path = path.join(__dirname, "../public");
 const template_path = path.join(__dirname, "./templates/views");
 const partials_path = path.join(__dirname, "./templates/partials");
+
+// Vercel sits behind a proxy; needed so secure cookies work in production
+app.set("trust proxy", 1);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -33,6 +36,8 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     cookie: {
       httpOnly: true,
+      secure: isProd,
+      sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24,
     },
   })
@@ -48,10 +53,19 @@ const requireLogin = (req, res, next) =>
 const redirectIfLoggedIn = (req, res, next) =>
   req.session.user ? res.redirect("/") : next();
 
+// ---------- Pages ----------
 app.get("/", (req, res) => res.render("home"));
 app.get("/about", (req, res) => res.render("about"));
 app.get("/login", redirectIfLoggedIn, (req, res) => res.render("login"));
 app.get("/register", redirectIfLoggedIn, (req, res) => res.render("register"));
+
+// Category pages (men.html, women.html, kids.html live in src/templates/views)
+app.get("/men",   (req, res) => res.sendFile(path.join(template_path, "men.html")));
+app.get("/women", (req, res) => res.sendFile(path.join(template_path, "women.html")));
+app.get("/kids",  (req, res) => res.sendFile(path.join(template_path, "kids.html")));
+
+// Placeholder until the products page is built
+app.get("/products", (req, res) => res.send("Products page coming soon"));
 
 app.get("/profile", requireLogin, async (req, res) => {
   try {
@@ -73,6 +87,7 @@ app.get("/profile", requireLogin, async (req, res) => {
   }
 });
 
+// ---------- Auth ----------
 app.post("/register", redirectIfLoggedIn, async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
@@ -132,4 +147,12 @@ app.post("/logout", requireLogin, (req, res) => {
   });
 });
 
-app.listen(port, () => console.log(`Server is running on port ${port}`));
+// ---------- 404 (keep this last) ----------
+app.use((req, res) => res.status(404).send("Page not found"));
+
+// Run a normal server locally; on Vercel the app is exported instead
+if (require.main === module) {
+  app.listen(port, () => console.log(`Server is running on port ${port}`));
+}
+
+module.exports = app;

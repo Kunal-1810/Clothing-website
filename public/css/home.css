@@ -28,14 +28,14 @@
 .view-btn:hover,
 .search-btn:hover { background-color: #e2bcbc; }
 
-.gender {
+.categories {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   padding: 20px 40px 8px;
 }
 
-.gender a {
+.categories a {
   text-align: center;
   padding: 14px 0;
   border: 1.5px solid #eccfcf;
@@ -46,7 +46,7 @@
   
 }
 
-.gender a:hover { background-color: #fbeaf0; }
+.categories a:hover { background-color: #fbeaf0; }
 
 .search {
   display: flex;
