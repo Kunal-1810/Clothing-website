@@ -1,0 +1,12 @@
+*{
+    text-align: center;
+    background: rgb(176, 242, 232);
+}
+h1{
+    color: red;
+}
+p{
+    font-size: 16px;
+    color: blue;
+    text-align: left;
+}

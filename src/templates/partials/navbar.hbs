@@ -1,0 +1,28 @@
+<link rel="stylesheet" href="/css/navbar.css">
+
+<nav class="navbar">
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/about">About</a></li>
+
+    {{#if user}}
+      <li><a href="/profile">Hi, {{user.name}}</a></li>
+      <li>
+        <form action="/logout" method="POST" class="logout-form">
+          <button type="submit" class="logout-btn">Logout</button>
+        </form>
+      </li>
+    {{else}}
+      <li><a href="/login">Login</a></li>
+      <li><a href="/register">Register</a></li>
+    {{/if}}
+  </ul>
+</nav>
+
+<script>
+  document.querySelectorAll(".nav-links a").forEach(function (link) {
+    if (link.getAttribute("href") === window.location.pathname) {
+      link.classList.add("active");
+    }
+  });
+</script>

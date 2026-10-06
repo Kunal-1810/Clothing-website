@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="/css/about.css">
+
+{{> navbar}}
+
+<div class="about-story">
+  <div class="about-text">
+    <div class="heading">
+    <h4>The Clothing Loop </h4>
+      <h6>Curated Apparel & Style</h6>
+      </div>
+    <br>
+    <h3>Our store</h3>
+    <p>We are a small, independent clothing brand that believes in quality over quantity. We make comfortable, well-made clothes for everyone and deliver them to your door.</p>
+  </div>
+  <img class="about-img" src="about-img.jpeg" alt="Our store">
+</div>
+
+<div class="about-info">
+  <div class="info-card">
+    <h3>Shipping</h3>
+    <p>Delivery in 3 to 5 working days.</p>
+  </div>
+  <div class="info-card">
+    <h3>Returns</h3>
+    <p>Easy returns within 7 days.</p>
+  </div>
+  <div class="info-card">
+    <h3>Contact</h3>
+    <p>clothingloop@gmail.com</p>
+  </div>
+</div>
+
+<div class="about-contact">
+  <h3>Send us a message</h3><br>
+  <form class="contact-form" action="/contact" method="POST">
+    <input type="text" name="name" placeholder="Your name" required>
+    <input type="email" name="email" placeholder="name@company.com" required>
+    <textarea name="message" rows="4" placeholder="Your message" required></textarea>
+    <button type="submit" class="contact-btn">Send</button>
+  </form>
+</div>
+
+<footer>
+  <p>&copy; 2024 The Clothing Loop. All rights reserved.</p>
+</footer>
+

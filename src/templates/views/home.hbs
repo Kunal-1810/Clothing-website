@@ -1,0 +1,174 @@
+<link rel="stylesheet" href="/css/home.css">
+
+{{> navbar}}
+
+<div class="home-content">
+  <div class="home-text">
+    <h3>New season arrivals</h3>
+    <p>Up to 30% off on selected styles</p>
+  </div>
+  <div class="home-button">
+    <a href="/products" class="shop-btn">Shop now</a>
+  </div>
+</div>
+
+<div class="gender">
+  <a href="/products?category=men" class="men-btn"><span class="logo" style='font: size 50px;'>&#128104;</span><br><strong>Men</strong></a>
+  <a href="/products?category=women" class="women-btn"><span class="logo" style='font: size 50px;'>&#128105;</span><br><strong>Women</strong></a>
+  <a href="/products?category=kids" class="kids-btn"><span class="logo" style='font: size 50px;'>&#128118;</span><br><strong>Kids</strong></a>
+</div>
+
+<form class="search" action="/products" method="GET">
+  <input class="search-input" type="text" name="q" placeholder="Search for products...">
+  <button class="search-btn" type="submit">Search</button>
+</form>
+
+<div class="products">
+
+  <div class="hoodie">
+  <div class="product-card">
+    <img src="hoodie1.webp" alt="{{this.name}}">
+    <div class="product-info">
+      <h4> Web Crest Black Hoodie </h4>
+      <p class="price">Rs 1,999.00</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size"> XL </span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div>
+
+  <div class="product-card">
+    <img src="hoodie2.webp" alt="{{this.name}}">
+    <div class="product-info">
+      <h4> Faded Black Hoodie</h4>
+      <p class="price">Rs 1,699.00</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size"> XL </span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div>
+
+
+<div class="product-card">
+    <img src="hoodie3.webp" alt="{{this.name}}">
+    <div class="product-info">
+      <h4> Iron Man Oversized Hoodie</h4>
+      <p class="price">Rs 1,599.00</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size"> XL </span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div>
+
+  <div class="product-card">
+    <img src="hoodie4.webp" alt="{{this.name}}">
+    <div class="product-info">
+      <h4> Grey Wear A Hug Oversized Hoodie </h4>
+      <p class="price">Rs 1,599.00</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size"> XL </span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div>
+
+
+  <div class="product-card">
+    <img src="hoodie5.webp" alt="{{this.name}}">
+    <div class="product-info">
+      <h4> Playboy Muse Oversized Hoodie </h4>
+      <p class="price">Rs 1,599.00</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size"> XL </span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div>
+  </div>
+
+<br><br>
+
+
+<div class="Bottomwear">
+  <div class="product-card">
+    <img src="Bottomwear1.webp" alt="{{this.name}}">
+    <div class="product-info">
+      <h4> Black Loose Fit Joggers </h4>
+      <p class="price">Rs 1,299.00</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size"> XL </span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div>
+  <div class="product-card">
+    <img src="Bottomwear2.webp" alt="{{this.name}}">
+    <div class="product-info">
+      <h4> Cloudy Everyday Joggers </h4>
+      <p class="price">Rs 1,399.00</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size"> XL </span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div><div class="product-card">
+    <img src="Bottomwear3.webp" alt="{{this.name}}">
+    <div class="product-info">
+      <h4> Driftwood 6 Pockets Cargo Pant </h4>
+      <p class="price">Rs 1,399.00</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size"> XL </span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div><div class="product-card">
+    <img src="Bottomwear4.webp" alt="{{this.name}}">
+    <div class="product-info">
+      <h4> Hustle The Untammed White Joggers </h4>
+      <p class="price">Rs 1,599.00</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size"> XL </span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div><div class="product-card">
+    <img src="Bottomwear5.webp" alt="{{this.name}}">
+    <div class="product-info">
+      <h4> Espresso Brown Wide-Leg Sweatpants  </h4>
+      <p class="price">Rs 1,199.00</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size"> XL </span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div>
+  
+</div>
+</div>
+
+<footer>
+  <p>&copy; 2024 The Clothing Loop. All rights reserved.</p>
+</footer>

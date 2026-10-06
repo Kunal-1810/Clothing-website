@@ -1,0 +1,21 @@
+<link rel="stylesheet" href="/css/login.css">
+
+{{> navbar}}
+
+<section class="auth-box">
+  <h3>Welcome back</h3>
+
+  {{#if error}}
+  <p class="auth-error">{{error}}</p>
+  {{/if}}
+
+  <form class="auth-form" action="/login" method="POST">
+    <input type="email" name="email" placeholder="name@company.com" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit" class="auth-btn">Log in</button>
+  </form>
+
+  <p class="auth-link">New here? <a href="/register">Create an account</a></p>
+</section>
+
+

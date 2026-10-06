@@ -1,0 +1,21 @@
+<link rel="stylesheet" href="/css/login.css">
+
+{{> navbar}}
+
+<section class="auth-box">
+  <h3>Create your account</h3>
+
+  {{#if error}}
+  <p class="auth-error">{{error}}</p>
+  {{/if}}
+
+  <form class="auth-form" action="/register" method="POST">
+    <input type="text" name="name" placeholder="Full name" required>
+    <input type="email" name="email" placeholder="name@company.com" required>
+    <input type="password" name="password" placeholder="Password" minlength="6" required>
+    <input type="password" name="confirmPassword" placeholder="Confirm password" minlength="6" required>
+    <button type="submit" class="auth-btn">Create account</button>
+  </form>
+
+  <p class="auth-link">Already registered? <a href="/login">Log in</a></p>
+</section>

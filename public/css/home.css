@@ -1,0 +1,111 @@
+.home-content {
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 40px;
+  background-color: #fbeaf0;
+  color: #4b1528;
+}
+
+.home-text h3 { margin: 0; font-size: 24px; }
+.home-text p { margin: 4px 0 0; }
+
+.shop-btn,
+.view-btn,
+.search-btn {
+  background-color: #eccfcf;
+  color: #4b1528;
+  border: 1px solid #993556;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.shop-btn:hover,
+.view-btn:hover,
+.search-btn:hover { background-color: #e2bcbc; }
+
+.gender {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 20px 40px 8px;
+}
+
+.gender a {
+  text-align: center;
+  padding: 14px 0;
+  border: 1.5px solid #eccfcf;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #4b1528;
+  font-size: 18px;
+  
+}
+
+.gender a:hover { background-color: #fbeaf0; }
+
+.search {
+  display: flex;
+  gap: 8px;
+  padding: 12px 40px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.hoodie, .Bottomwear {
+  margin-left: 10px;
+  margin-right: 20px;
+  display: flex;
+  justify-content: space-around;
+}
+.product-card {
+    margin-left:20px;
+    width: 200px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.product-card img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  display: block;
+}
+h4{color:#4b1528;
+}
+.product-info { padding: 10px 12px; }
+.product-info h4 { margin: 0 0 4px; }
+.price { margin: 0 0 6px; font-weight: 500; }
+
+.size {
+  display: inline-block;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 0 6px;
+  margin-right: 4px;
+  font-size: 12px;
+}
+
+.view-btn { 
+  display: inline-block; 
+  margin-top: 8px;
+  justify-content: space-around;
+}
+
+footer{
+  margin-top:30px;
+  background-color: #eccfcf;
+  color: #4b1528;
+  text-align: center;
+  padding: 12px 0;
+}
