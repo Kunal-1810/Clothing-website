@@ -1,12 +1,13 @@
-   {
-     "version": 2,
-     "builds": [
-       {
-         "src": "src/app.js",
-         "use": "@vercel/node",
-         "config": { "includeFiles": ["public/**", "src/templates/**"] }
-       }
-     ],
-     "routes": [{ "src": "/(.*)", "dest": "src/app.js" }]
-   }
-   
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/app.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["public/**", "src/templates/**", "src/models/**"]
+      }
+    }
+  ],
+  "routes": [{ "src": "/(.*)", "dest": "src/app.js" }]
+}

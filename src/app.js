@@ -9,10 +9,12 @@ const bcrypt = require("bcryptjs");
 
 require("./db/conn");
 const User = require("./models/user");
+const Product = require("./models/product");
 
 const app = express();
 const port = process.env.PORT || 3000;
 const isProd = process.env.NODE_ENV === "production";
+const debugErrors = process.env.DEBUG_ERRORS === "true";
 
 const static_path = path.join(__dirname, "../public");
 const template_path = path.join(__dirname, "./templates/views");
@@ -64,10 +66,7 @@ app.get("/men",   (req, res) => res.sendFile(path.join(template_path, "men.html"
 app.get("/women", (req, res) => res.sendFile(path.join(template_path, "women.html")));
 app.get("/kids",  (req, res) => res.sendFile(path.join(template_path, "kids.html")));
 
-
-
-const Product = require("./models/product");
-
+// ---------- Products ----------
 // Shop now + Search
 app.get("/products", async (req, res) => {
   try {
@@ -82,25 +81,31 @@ app.get("/products", async (req, res) => {
     const products = await Product.find(filter).lean();
     res.render("products", { products, query: q });
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Something went wrong");
+    console.error("GET /products failed:", err);
+    res
+      .status(500)
+      .send(debugErrors ? "Error: " + err.message : "Something went wrong");
   }
 });
 
 // View button
 app.get("/products/:id", async (req, res) => {
   try {
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(404).send("Product not found");
+    }
     const product = await Product.findById(req.params.id).lean();
     if (!product) return res.status(404).send("Product not found");
     res.render("product-details", { product });
   } catch (err) {
-    res.status(404).send("Product not found");
+    console.error("GET /products/:id failed:", err);
+    res
+      .status(500)
+      .send(debugErrors ? "Error: " + err.message : "Something went wrong");
   }
 });
 
-// Placeholder until the products page is built
-app.get("/products", (req, res) => res.send("Products page coming soon"));
-
+// ---------- Profile ----------
 app.get("/profile", requireLogin, async (req, res) => {
   try {
     const dbUser = await User.findById(req.session.user.id)
