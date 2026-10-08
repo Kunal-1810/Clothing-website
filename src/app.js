@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+
 const express = require("express");
 const path = require("path");
 const hbs = require("hbs");
@@ -7,7 +8,7 @@ const session = require("express-session");
 const { MongoStore } = require("connect-mongo"); // connect-mongo v6+. On v5 or older: const MongoStore = require("connect-mongo");
 const bcrypt = require("bcryptjs");
 
-require("./db/conn");
+const connectDB = require("./db/conn");
 const User = require("./models/user");
 const Product = require("./models/product");
 
@@ -29,6 +30,15 @@ app.use(express.static(static_path));
 app.set("view engine", "hbs");
 app.set("views", template_path);
 hbs.registerPartials(partials_path);
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("DB connection failed:", err);
+    res.status(500).send(debugErrors ? "DB error: " + err.message : "Something went wrong");
+  }
+});
 
 app.use(
   session({
