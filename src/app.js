@@ -30,15 +30,7 @@ app.use(express.static(static_path));
 app.set("view engine", "hbs");
 app.set("views", template_path);
 hbs.registerPartials(partials_path);
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (err) {
-    console.error("DB connection failed:", err);
-    res.status(500).send(debugErrors ? "DB error: " + err.message : "Something went wrong");
-  }
-});
+
 
 app.use(
   session({
