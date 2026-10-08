@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://clothing-website-delta-three.vercel.app/sitemap.xml
