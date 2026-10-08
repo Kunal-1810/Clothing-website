@@ -1,0 +1,53 @@
+<link rel="stylesheet" href="/css/home.css">
+
+{{> navbar}}
+
+<title>{{#if query}}Search: {{query}}{{else}}All Products{{/if}} - Clothing Store</title>
+<meta name="description" content="Browse all clothing for men, women and kids at Clothing Store.">
+
+<div class="home-content">
+  <div class="home-text">
+    {{#if query}}
+      <h3>Results for "{{query}}"</h3>
+      <p>{{products.length}} product(s) found</p>
+    {{else}}
+      <h3>All Products</h3>
+      <p>Up to 30% off on selected styles</p>
+    {{/if}}
+  </div>
+</div>
+
+<div class="categories">
+  <a class="category" href="/men">👦 Men</a>
+  <a class="category" href="/women">👩 Women</a>
+  <a class="category" href="/kids">👶 Kids</a>
+</div>
+
+<form class="search" action="/products" method="GET">
+  <input class="search-input" type="text" name="q" value="{{query}}" placeholder="Search for products...">
+  <button class="search-btn" type="submit">Search</button>
+</form>
+
+<div class="products">
+  {{#each products}}
+  <div class="product-card">
+    <img src="/{{this.image}}" alt="{{this.name}}">
+    <div class="product-info">
+      <h4>{{this.name}}</h4>
+      <p class="price">Rs {{this.price}}</p>
+      <div class="sizes">
+        {{#each this.sizes}}
+        <span class="size">{{this}}</span>
+        {{/each}}
+      </div>
+      <a href="/products/{{this._id}}" class="view-btn">View</a>
+    </div>
+  </div>
+  {{else}}
+  <p class="no-results">No products found. <a href="/products">View all products</a></p>
+  {{/each}}
+</div>
+
+<footer>
+  <p>&copy; 2024 The Clothing Loop. All rights reserved.</p>
+</footer>

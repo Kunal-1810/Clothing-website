@@ -64,6 +64,40 @@ app.get("/men",   (req, res) => res.sendFile(path.join(template_path, "men.html"
 app.get("/women", (req, res) => res.sendFile(path.join(template_path, "women.html")));
 app.get("/kids",  (req, res) => res.sendFile(path.join(template_path, "kids.html")));
 
+
+
+const Product = require("./models/product");
+
+// Shop now + Search
+app.get("/products", async (req, res) => {
+  try {
+    const q = (req.query.q || "").trim();
+    let filter = {};
+    if (q) {
+      // escape regex special characters so the search can't break
+      const safe = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const rx = new RegExp(safe, "i");
+      filter = { $or: [{ name: rx }, { type: rx }, { category: rx }] };
+    }
+    const products = await Product.find(filter).lean();
+    res.render("products", { products, query: q });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Something went wrong");
+  }
+});
+
+// View button
+app.get("/products/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).lean();
+    if (!product) return res.status(404).send("Product not found");
+    res.render("product-details", { product });
+  } catch (err) {
+    res.status(404).send("Product not found");
+  }
+});
+
 // Placeholder until the products page is built
 app.get("/products", (req, res) => res.send("Products page coming soon"));
 
