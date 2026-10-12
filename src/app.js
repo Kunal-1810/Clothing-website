@@ -1,6 +1,5 @@
 require("dotenv").config();
 
-
 const express = require("express");
 const path = require("path");
 const hbs = require("hbs");
@@ -31,6 +30,40 @@ app.set("view engine", "hbs");
 app.set("views", template_path);
 hbs.registerPartials(partials_path);
 
+// ---------- Fail clearly if env vars are missing ----------
+const missingEnv = ["MONGODB_URI", "SESSION_SECRET"].filter(
+  (k) => !process.env[k]
+);
+if (missingEnv.length) {
+  console.error("Missing environment variables:", missingEnv.join(", "));
+  app.use((req, res) =>
+    res
+      .status(500)
+      .send(
+        debugErrors
+          ? "Missing environment variables: " + missingEnv.join(", ")
+          : "Server is not configured correctly"
+      )
+  );
+  module.exports = app;
+  if (require.main === module) {
+    app.listen(port, () => console.log(`Server is running on port ${port}`));
+  }
+  return;
+}
+
+// ---------- Connect Mongoose BEFORE anything else touches the DB ----------
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("DB connection failed:", err);
+    res
+      .status(500)
+      .send(debugErrors ? "DB error: " + err.message : "Something went wrong");
+  }
+});
 
 app.use(
   session({
@@ -52,8 +85,12 @@ app.use((req, res, next) => {
   next();
 });
 
-const requireLogin = (req, res, next) =>
-  req.session.user ? next() : res.redirect("/login");
+// Send people to login if they are not logged in, and remember where they wanted to go
+const requireLogin = (req, res, next) => {
+  if (req.session.user) return next();
+  req.session.returnTo = req.originalUrl;
+  req.session.save(() => res.redirect("/login"));
+};
 const redirectIfLoggedIn = (req, res, next) =>
   req.session.user ? res.redirect("/") : next();
 
@@ -64,13 +101,13 @@ app.get("/login", redirectIfLoggedIn, (req, res) => res.render("login"));
 app.get("/register", redirectIfLoggedIn, (req, res) => res.render("register"));
 
 // Category pages (men.html, women.html, kids.html live in src/templates/views)
-app.get("/men",   (req, res) => res.sendFile(path.join(template_path, "men.html")));
+app.get("/men", (req, res) => res.sendFile(path.join(template_path, "men.html")));
 app.get("/women", (req, res) => res.sendFile(path.join(template_path, "women.html")));
-app.get("/kids",  (req, res) => res.sendFile(path.join(template_path, "kids.html")));
+app.get("/kids", (req, res) => res.sendFile(path.join(template_path, "kids.html")));
 
-// ---------- Products ----------
+// ---------- Products (login required) ----------
 // Shop now + Search
-app.get("/products", async (req, res) => {
+app.get("/products", requireLogin, async (req, res) => {
   try {
     const q = (req.query.q || "").trim();
     let filter = {};
@@ -91,7 +128,7 @@ app.get("/products", async (req, res) => {
 });
 
 // View button
-app.get("/products/:id", async (req, res) => {
+app.get("/products/:id", requireLogin, async (req, res) => {
   try {
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
       return res.status(404).send("Product not found");
@@ -133,6 +170,9 @@ app.post("/register", redirectIfLoggedIn, async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
 
+    if (!name || !email || !password) {
+      return res.render("register", { error: "Please fill in all fields" });
+    }
     if (password !== confirmPassword) {
       return res.render("register", { error: "Passwords do not match" });
     }
@@ -149,8 +189,14 @@ app.post("/register", redirectIfLoggedIn, async (req, res) => {
       password: hashed,
     });
 
-    req.session.user = { id: user._id, name: user.name, email: user.email };
-    req.session.save(() => res.redirect("/"));
+    const returnTo = req.session.returnTo || "/products";
+    req.session.regenerate((err) => {
+      if (err) {
+        return res.render("register", { error: "Something went wrong. Try again." });
+      }
+      req.session.user = { id: user._id, name: user.name, email: user.email };
+      req.session.save(() => res.redirect(returnTo));
+    });
   } catch (err) {
     console.error(err);
     res.render("register", { error: "Something went wrong. Try again." });
@@ -161,6 +207,10 @@ app.post("/login", redirectIfLoggedIn, async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.render("login", { error: "Invalid email or password" });
+    }
+
     const user = await User.findOne({ email: email.toLowerCase() });
     const ok = user && (await bcrypt.compare(password, user.password));
 
@@ -168,12 +218,14 @@ app.post("/login", redirectIfLoggedIn, async (req, res) => {
       return res.render("login", { error: "Invalid email or password" });
     }
 
+    // regenerate() wipes the session, so grab returnTo first
+    const returnTo = req.session.returnTo || "/products";
     req.session.regenerate((err) => {
       if (err) {
         return res.render("login", { error: "Login failed. Try again." });
       }
       req.session.user = { id: user._id, name: user.name, email: user.email };
-      req.session.save(() => res.redirect("/"));
+      req.session.save(() => res.redirect(returnTo));
     });
   } catch (err) {
     console.error(err);

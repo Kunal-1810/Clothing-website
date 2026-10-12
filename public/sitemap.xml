@@ -3,21 +3,36 @@
   <url>
     <loc>https://clothing-website-delta-three.vercel.app/</loc>
     <lastmod>2026-10-08</lastmod>
+    <priority>1.00</priority>
+  </url>
+  <url>
+    <loc>https://clothing-website-delta-three.vercel.app/login.hbs</loc>
+    <lastmod>2026-10-08</lastmod>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://clothing-website-delta-three.vercel.app/register.hbs</loc>
+    <lastmod>2026-10-08</lastmod>
+    <priority>0.80</priority>
   </url>
   <url>
     <loc>https://clothing-website-delta-three.vercel.app/men.html</loc>
     <lastmod>2026-10-08</lastmod>
+    <priority>0.70</priority>
   </url>
   <url>
     <loc>https://clothing-website-delta-three.vercel.app/women.html</loc>
     <lastmod>2026-10-08</lastmod>
+    <priority>0.60</priority>
   </url>
   <url>
     <loc>https://clothing-website-delta-three.vercel.app/kids.html</loc>
     <lastmod>2026-10-08</lastmod>
+    <priority>0.50</priority>
   </url>
   <url>
-    <loc>https://clothing-website-delta-three.vercel.app/about.html</loc>
+    <loc>https://clothing-website-delta-three.vercel.app/about.hbs</loc>
     <lastmod>2026-10-08</lastmod>
+    <priority>0.40</priority>
   </url>
 </urlset>
