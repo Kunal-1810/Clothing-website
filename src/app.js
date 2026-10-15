@@ -1,14 +1,21 @@
-
 const dns = require("node:dns");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 dns.setDefaultResultOrder("ipv4first");
 
 require("dotenv").config();
+
+// ---- TEMPORARY DEBUG: remove once the DB connects ----
+console.log(
+  "URI loaded:",
+  process.env.MONGODB_URI?.replace(/:([^:@]+)@/, ":****@")
+);
+// ------------------------------------------------------
+
 const express = require("express");
 const path = require("path");
 const hbs = require("hbs");
 const session = require("express-session");
-const { MongoStore } = require("connect-mongo"); 
+const { MongoStore } = require("connect-mongo");
 const bcrypt = require("bcryptjs");
 
 const connectDB = require("./db/conn");
@@ -192,6 +199,7 @@ app.post("/register", redirectIfLoggedIn, async (req, res) => {
       password: hashed,
     });
 
+    // regenerate() wipes the session, so grab returnTo first
     const returnTo = req.session.returnTo || "/products";
     req.session.regenerate((err) => {
       if (err) {
