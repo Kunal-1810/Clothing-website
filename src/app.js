@@ -1,10 +1,14 @@
-require("dotenv").config();
 
+const dns = require("node:dns");
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+dns.setDefaultResultOrder("ipv4first");
+
+require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const hbs = require("hbs");
 const session = require("express-session");
-const { MongoStore } = require("connect-mongo"); // connect-mongo v6+. On v5 or older: const MongoStore = require("connect-mongo");
+const { MongoStore } = require("connect-mongo"); 
 const bcrypt = require("bcryptjs");
 
 const connectDB = require("./db/conn");
@@ -20,7 +24,6 @@ const static_path = path.join(__dirname, "../public");
 const template_path = path.join(__dirname, "./templates/views");
 const partials_path = path.join(__dirname, "./templates/partials");
 
-// Vercel sits behind a proxy; needed so secure cookies work in production
 app.set("trust proxy", 1);
 
 app.use(express.json());

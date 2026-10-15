@@ -83,7 +83,23 @@ h6{
   font-size: 14px;
   font-family: inherit;
 }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
+.brand-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  object-fit: contain;
+}
+
+.brand-text h4,
+.brand-text h6 {
+  margin: 0;
+}
 .contact-btn {
   background-color: #eccfcf;
   color: #4b1528;
