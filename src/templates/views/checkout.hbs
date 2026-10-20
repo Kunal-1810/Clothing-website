@@ -1,0 +1,76 @@
+<title>Checkout | The Clothing Loop</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/css/shop.css">
+
+{{> navbar}}
+
+<main class="shop-page">
+  <h1>Checkout</h1>
+
+  <div class="cart-layout">
+    <form class="co-form" action="/checkout" method="POST" id="checkoutForm">
+      <h2>Delivery address</h2>
+
+      {{#if error}}<p class="form-error" role="alert">{{error}}</p>{{/if}}
+
+      <label>Full name
+        <input type="text" name="fullName" value="{{form.fullName}}" autocomplete="name" required maxlength="80">
+      </label>
+      <label>Mobile number
+        <input type="tel" name="phone" value="{{form.phone}}" autocomplete="tel" inputmode="numeric" placeholder="10-digit mobile number" required>
+      </label>
+      <label>Address
+        <input type="text" name="line1" value="{{form.line1}}" autocomplete="address-line1" placeholder="House no., street, area" required maxlength="200">
+      </label>
+      <div class="two-col">
+        <label>City
+          <input type="text" name="city" value="{{form.city}}" autocomplete="address-level2" required maxlength="60">
+        </label>
+        <label>State
+          <input type="text" name="state" value="{{form.state}}" autocomplete="address-level1" required maxlength="60">
+        </label>
+      </div>
+      <label>PIN code
+        <input type="text" name="pincode" value="{{form.pincode}}" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6 digits" required>
+      </label>
+
+      <h2>Payment</h2>
+      <p class="pay-box"><strong>Cash on delivery</strong><br>Pay when your order arrives.</p>
+
+      <button type="submit" class="btn-primary" id="placeBtn">Place order</button>
+    </form>
+
+    <aside class="summary">
+      <h2>Your items</h2>
+      <ul class="mini-list">
+        {{#each cart.lines}}
+        <li>
+          <img src="/{{this.image}}" alt="{{this.name}}">
+          <div>
+            <p class="mini-name">{{this.name}}</p>
+            <p class="ci-meta">Size {{this.size}}, qty {{this.qty}}</p>
+          </div>
+          <p>₹{{money this.lineTotal}}</p>
+        </li>
+        {{/each}}
+      </ul>
+      <dl>
+        <div><dt>Subtotal</dt><dd>₹{{money cart.subtotal}}</dd></div>
+        <div><dt>Delivery</dt><dd>{{#if cart.shipping}}₹{{money cart.shipping}}{{else}}Free{{/if}}</dd></div>
+        <div class="total"><dt>Total</dt><dd>₹{{money cart.total}}</dd></div>
+      </dl>
+      <a href="/cart" class="link-btn center">Edit cart</a>
+    </aside>
+  </div>
+</main>
+
+<footer>
+  <p>&copy; 2026 The Clothing Loop. All rights reserved.</p>
+</footer>
+
+<script>
+  document.getElementById("checkoutForm").addEventListener("submit", function () {
+    var b = document.getElementById("placeBtn");
+    setTimeout(function () { b.disabled = true; b.textContent = "Placing order..."; }, 0);
+  });
+</script>

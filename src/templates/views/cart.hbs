@@ -1,0 +1,72 @@
+<title>Your cart | The Clothing Loop</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/css/shop.css">
+
+{{> navbar}}
+
+<main class="shop-page">
+  <h1>Your cart</h1>
+
+  {{#if cart.lines.length}}
+  <div class="cart-layout">
+    <ul class="cart-list">
+      {{#each cart.lines}}
+      <li class="cart-item">
+        <a href="/products/{{this.productId}}" class="ci-img"><img src="/{{this.image}}" alt="{{this.name}}"></a>
+        <div class="ci-main">
+          <a class="ci-name" href="/products/{{this.productId}}">{{this.name}}</a>
+          <p class="ci-meta">Size {{this.size}}</p>
+          <p class="ci-meta">₹{{money this.price}} each</p>
+          <div class="ci-actions">
+            <div class="qty">
+              <form action="/cart/update" method="POST">
+                <input type="hidden" name="productId" value="{{this.productId}}">
+                <input type="hidden" name="size" value="{{this.size}}">
+                <input type="hidden" name="qty" value="{{this.minusQty}}">
+                <button type="submit" aria-label="Decrease quantity">&minus;</button>
+              </form>
+              <span class="qty-num" aria-label="Quantity">{{this.qty}}</span>
+              <form action="/cart/update" method="POST">
+                <input type="hidden" name="productId" value="{{this.productId}}">
+                <input type="hidden" name="size" value="{{this.size}}">
+                <input type="hidden" name="qty" value="{{this.plusQty}}">
+                <button type="submit" aria-label="Increase quantity" {{#unless this.canIncrease}}disabled{{/unless}}>+</button>
+              </form>
+            </div>
+            <form action="/cart/remove" method="POST">
+              <input type="hidden" name="productId" value="{{this.productId}}">
+              <input type="hidden" name="size" value="{{this.size}}">
+              <button type="submit" class="link-btn">Remove</button>
+            </form>
+          </div>
+        </div>
+        <p class="ci-total">₹{{money this.lineTotal}}</p>
+      </li>
+      {{/each}}
+    </ul>
+
+    <aside class="summary">
+      <h2>Order summary</h2>
+      <dl>
+        <div><dt>Subtotal</dt><dd>₹{{money cart.subtotal}}</dd></div>
+        <div><dt>Delivery</dt><dd>{{#if cart.shipping}}₹{{money cart.shipping}}{{else}}Free{{/if}}</dd></div>
+        <div class="total"><dt>Total</dt><dd>₹{{money cart.total}}</dd></div>
+      </dl>
+      {{#if cart.amountForFreeShipping}}
+      <p class="hint">Add ₹{{money cart.amountForFreeShipping}} more for free delivery.</p>
+      {{/if}}
+      <a href="/checkout" class="btn-primary block">{{#if user}}Proceed to checkout{{else}}Log in to checkout{{/if}}</a>
+      <a href="/products" class="link-btn center">Continue shopping</a>
+    </aside>
+  </div>
+  {{else}}
+  <div class="empty">
+    <p>Your cart is empty.</p>
+    <a href="/products" class="btn-primary">Browse products</a>
+  </div>
+  {{/if}}
+</main>
+
+<footer>
+  <p>&copy; 2026 The Clothing Loop. All rights reserved.</p>
+</footer>

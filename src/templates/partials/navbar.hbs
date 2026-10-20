@@ -1,8 +1,9 @@
 <link rel="stylesheet" href="/css/navbar.css">
+<link rel="stylesheet" href="/css/navbar-cart.css">
 
 <nav class="navbar">
   <a href="/" class="brand">
-    <img src="logo.svg" alt="The Clothing Loop logo" class="brand-logo">
+    <img src="/logo.svg" alt="The Clothing Loop logo" class="brand-logo">
     <span class="brand-name">The Clothing Loop</span>
   </a>
 
@@ -21,6 +22,19 @@
       <li><a href="/login">Login</a></li>
       <li><a href="/register">Register</a></li>
     {{/if}}
+
+    <li>
+      <a href="/cart" class="cart-link" aria-label="Shopping cart">
+        <span class="cart-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="20" r="1.4"></circle>
+          <circle cx="18" cy="20" r="1.4"></circle>
+          <path d="M2 3h3l2.4 11.2a1.6 1.6 0 0 0 1.6 1.3h8.7a1.6 1.6 0 0 0 1.6-1.2L21 7H6"></path>
+        </svg>
+        <span class="cart-badge" id="cartBadge" {{#unless cartCount}}hidden{{/unless}}>{{cartCount}}</span>
+        </span>
+      </a>
+    </li>
   </ul>
 </nav>
 

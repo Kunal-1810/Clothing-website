@@ -1,0 +1,141 @@
+<title>{{product.name}} - {{categoryLabel}} | The Clothing Loop</title>
+<meta name="description" content="{{description}}">
+<link rel="canonical" href="{{canonical}}">
+<meta property="og:type" content="product">
+<meta property="og:title" content="{{product.name}} | The Clothing Loop">
+<meta property="og:description" content="{{description}}">
+<meta property="og:image" content="{{imageUrl}}">
+<meta property="og:url" content="{{canonical}}">
+<script type="application/ld+json">{{{jsonLd}}}</script>
+<link rel="stylesheet" href="/css/shop.css">
+
+{{> navbar}}
+
+<main class="pd">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span aria-hidden="true">/</span>
+    <a href="/{{product.category}}">{{categoryLabel}}</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{product.name}}</span>
+  </nav>
+
+  <div class="pd-grid">
+    <div class="pd-media">
+      <img src="/{{product.image}}" alt="{{product.name}}">
+    </div>
+
+    <div class="pd-info">
+      <h1>{{product.name}}</h1>
+      <p class="pd-price">₹{{money product.price}}</p>
+      <p class="pd-desc">{{description}}</p>
+
+      <form id="addForm" class="pd-form" action="/cart/add" method="POST">
+        <input type="hidden" name="productId" value="{{product._id}}">
+
+        <fieldset class="pd-sizes">
+          <legend>Select size</legend>
+          <div class="size-row">
+            {{#each sizes}}
+            <label class="size-opt">
+              <input type="radio" name="size" value="{{this}}" required>
+              <span>{{this}}</span>
+            </label>
+            {{/each}}
+          </div>
+        </fieldset>
+
+        <div class="pd-qty">
+          <label for="qty">Quantity</label>
+          <input id="qty" type="number" name="qty" value="1" min="1" max="10" inputmode="numeric">
+        </div>
+
+        <div class="pd-actions">
+          <button type="submit" id="addBtn" class="btn-primary">Add to cart</button>
+          <button type="submit" name="buyNow" value="1" class="btn-outline">Buy now</button>
+        </div>
+      </form>
+
+      <ul class="pd-notes">
+        <li>Delivery in 3 to 5 working days</li>
+        <li>Easy returns within 7 days</li>
+        <li>Cash on delivery available</li>
+      </ul>
+    </div>
+  </div>
+
+  {{#if related.length}}
+  <section class="pd-related">
+    <h2>More from {{categoryLabel}}</h2>
+    <div class="rel-grid">
+      {{#each related}}
+      <article class="rel-card">
+        <img src="/{{this.image}}" alt="{{this.name}}">
+        <h3><a class="card-link" href="/products/{{this._id}}">{{this.name}}</a></h3>
+        <p>₹{{money this.price}}</p>
+      </article>
+      {{/each}}
+    </div>
+  </section>
+  {{/if}}
+</main>
+
+<footer>
+  <p>&copy; 2026 The Clothing Loop. All rights reserved.</p>
+</footer>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden>
+  <span id="toastMsg"></span>
+  <a id="toastLink" href="/cart">View cart</a>
+</div>
+
+<script>
+  (function () {
+    var form = document.getElementById("addForm");
+    if (!form || !window.fetch) return;
+    var toast = document.getElementById("toast");
+    var toastMsg = document.getElementById("toastMsg");
+    var toastLink = document.getElementById("toastLink");
+    var timer;
+
+    function showToast(message, showLink) {
+      toastMsg.textContent = message;
+      toastLink.hidden = !showLink;
+      toast.hidden = false;
+      clearTimeout(timer);
+      timer = setTimeout(function () { toast.hidden = true; }, 4000);
+    }
+
+    form.addEventListener("submit", function (e) {
+      // "Buy now" uses the normal form submit and goes straight to checkout
+      if (e.submitter && e.submitter.name === "buyNow") return;
+      e.preventDefault();
+
+      var btn = document.getElementById("addBtn");
+      var data = new FormData(form);
+      btn.disabled = true;
+
+      fetch("/cart/add", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          productId: data.get("productId"),
+          size: data.get("size"),
+          qty: data.get("qty")
+        })
+      })
+        .then(function (r) {
+          return r.json().then(function (j) { return { ok: r.ok, body: j }; });
+        })
+        .then(function (res) {
+          if (!res.ok || !res.body.ok) throw new Error(res.body.error || "Could not add to cart");
+          var badge = document.getElementById("cartBadge");
+          if (badge) { badge.textContent = res.body.count; badge.hidden = !res.body.count; }
+          showToast("Added to cart", true);
+        })
+        .catch(function (err) { showToast(err.message, false); })
+        .then(function () { btn.disabled = false; });
+    });
+  })();
+</script>

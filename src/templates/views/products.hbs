@@ -34,8 +34,8 @@
   <div class="product-card">
     <img src="/{{this.image}}" alt="{{this.name}}">
     <div class="product-info">
-      <h4>{{this.name}}</h4>
-      <p class="price">Rs {{this.price}}</p>
+      <h4><a class="card-link" href="/products/{{this._id}}">{{this.name}}</a></h4>
+      <p class="price">₹{{money this.price}}</p>
       <div class="sizes">
         {{#each this.sizes}}
         <span class="size">{{this}}</span>

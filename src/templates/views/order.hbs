@@ -1,0 +1,59 @@
+<title>Order {{order.orderNo}} | The Clothing Loop</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/css/shop.css">
+
+{{> navbar}}
+
+<main class="shop-page">
+  {{#if placed}}
+  <div class="placed" role="status">
+    <h1>Thank you, your order is placed</h1>
+    <p>We will deliver it in 3 to 5 working days. Pay ₹{{money order.total}} in cash on delivery.</p>
+  </div>
+  {{else}}
+  <h1>Order {{order.orderNo}}</h1>
+  {{/if}}
+
+  <div class="cart-layout">
+    <section>
+      <p class="order-head">Order {{order.orderNo}}, placed on {{date order.createdAt}}
+        <span class="status status-{{order.status}}">{{order.status}}</span></p>
+
+      <ul class="cart-list">
+        {{#each order.items}}
+        <li class="cart-item">
+          <span class="ci-img"><img src="/{{this.image}}" alt="{{this.name}}"></span>
+          <div class="ci-main">
+            <p class="ci-name">{{this.name}}</p>
+            <p class="ci-meta">Size {{this.size}}</p>
+            <p class="ci-meta">₹{{money this.price}} x {{this.qty}}</p>
+          </div>
+          <p class="ci-total">₹{{money this.lineTotal}}</p>
+        </li>
+        {{/each}}
+      </ul>
+    </section>
+
+    <aside class="summary">
+      <h2>Delivery address</h2>
+      <address>
+        {{order.shippingAddress.fullName}}<br>
+        {{order.shippingAddress.line1}}<br>
+        {{order.shippingAddress.city}}, {{order.shippingAddress.state}} {{order.shippingAddress.pincode}}<br>
+        {{order.shippingAddress.phone}}
+      </address>
+      <dl>
+        <div><dt>Subtotal</dt><dd>₹{{money order.subtotal}}</dd></div>
+        <div><dt>Delivery</dt><dd>{{#if order.shipping}}₹{{money order.shipping}}{{else}}Free{{/if}}</dd></div>
+        <div class="total"><dt>Total</dt><dd>₹{{money order.total}}</dd></div>
+      </dl>
+      <p class="hint">Payment: cash on delivery</p>
+      <a href="/orders" class="link-btn center">All my orders</a>
+      <a href="/products" class="btn-primary block">Continue shopping</a>
+    </aside>
+  </div>
+</main>
+
+<footer>
+  <p>&copy; 2026 The Clothing Loop. All rights reserved.</p>
+</footer>

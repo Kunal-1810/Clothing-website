@@ -1,0 +1,38 @@
+<title>{{meta.title}}</title>
+<meta name="description" content="{{meta.description}}">
+<meta name="keywords" content="{{meta.keywords}}">
+<link rel="canonical" href="{{canonical}}">
+<link rel="stylesheet" href="/css/gender.css">
+
+{{> navbar}}
+
+<header class="banner">
+  <h1>{{meta.heading}}</h1>
+  <p>{{meta.tagline}}</p>
+</header>
+
+<main class="container">
+  <form class="search-bar" action="/{{category}}" method="GET">
+    <input type="text" name="q" value="{{query}}" placeholder="Search in {{meta.heading}}...">
+    <button class="btn" type="submit">Search</button>
+  </form>
+
+  <section class="grid">
+    {{#each products}}
+    <article class="card">
+      <div class="placeholder"><img src="/{{this.image}}" alt="{{this.name}}"></div>
+      <div class="info">
+        <h3><a class="card-link" href="/products/{{this._id}}">{{this.name}}</a></h3>
+        <p class="price">₹{{money this.price}}</p>
+        <a class="btn" href="/products/{{this._id}}">View details</a>
+      </div>
+    </article>
+    {{else}}
+    <p>No products found. <a href="/{{category}}">Show all {{meta.heading}} products</a></p>
+    {{/each}}
+  </section>
+
+  <p style="margin-top:30px"><a class="btn" href="/">Back to home</a></p>
+</main>
+
+<footer>&copy; 2026 Clothing Store</footer>

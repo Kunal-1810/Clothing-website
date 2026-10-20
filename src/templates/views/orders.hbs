@@ -1,0 +1,39 @@
+<title>My orders | The Clothing Loop</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/css/shop.css">
+
+{{> navbar}}
+
+<main class="shop-page">
+  <h1>My orders</h1>
+
+  {{#if orders.length}}
+  <ul class="order-list">
+    {{#each orders}}
+    <li class="order-card">
+      <div class="oc-top">
+        <p><strong>Order {{this.orderNo}}</strong></p>
+        <span class="status status-{{this.status}}">{{this.status}}</span>
+      </div>
+      <p class="ci-meta">Placed on {{date this.createdAt}}</p>
+      <div class="oc-thumbs">
+        {{#each this.items}}<img src="/{{this.image}}" alt="{{this.name}}" title="{{this.name}}">{{/each}}
+      </div>
+      <div class="oc-bottom">
+        <p>Total ₹{{money this.total}}</p>
+        <a class="link-btn" href="/orders/{{this._id}}">View order</a>
+      </div>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <div class="empty">
+    <p>You have not placed any orders yet.</p>
+    <a href="/products" class="btn-primary">Start shopping</a>
+  </div>
+  {{/if}}
+</main>
+
+<footer>
+  <p>&copy; 2026 The Clothing Loop. All rights reserved.</p>
+</footer>

@@ -6,7 +6,8 @@ const productSchema = new mongoose.Schema({
   image: { type: String, required: true },   // e.g. "hoodie1.webp"
   category: { type: String, enum: ["men", "women", "kids"], default: "men" },
   type: { type: String },                    // hoodie, bottomwear, etc.
-  sizes: [String]
+  sizes: [String],
+  description: { type: String }              // optional; a default is generated if empty
 });
 
 module.exports = mongoose.models.Product || mongoose.model("Product", productSchema);

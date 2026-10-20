@@ -35,129 +35,37 @@
 <div class="products">
 
   <div class="hoodie">
+    {{#each hoodies}}
     <div class="product-card">
-      <img src="/hoodie1.webp" alt="Web Crest Black Hoodie">
+      <img src="/{{this.image}}" alt="{{this.name}}">
       <div class="product-info">
-        <h4>Web Crest Black Hoodie</h4>
-        <p class="price">Rs 1,999.00</p>
+        <h4><a class="card-link" href="/products/{{this._id}}">{{this.name}}</a></h4>
+        <p class="price">₹{{money this.price}}</p>
         <div class="sizes">
-          <span class="size">S</span><span class="size">M</span><span class="size">L</span><span class="size">XL</span>
+          {{#each this.sizes}}<span class="size">{{this}}</span>{{/each}}
         </div>
-        <a href="/products" class="view-btn">View</a>
+        <a href="/products/{{this._id}}" class="view-btn">View</a>
       </div>
     </div>
-
-    <div class="product-card">
-      <img src="/hoodie2.webp" alt="Faded Black Hoodie">
-      <div class="product-info">
-        <h4>Faded Black Hoodie</h4>
-        <p class="price">Rs 1,699.00</p>
-        <div class="sizes">
-          <span class="size">S</span><span class="size">M</span><span class="size">L</span><span class="size">XL</span>
-        </div>
-        <a href="/products" class="view-btn">View</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img src="/hoodie3.webp" alt="Iron Man Oversized Hoodie">
-      <div class="product-info">
-        <h4>Iron Man Oversized Hoodie</h4>
-        <p class="price">Rs 1,599.00</p>
-        <div class="sizes">
-          <span class="size">S</span><span class="size">M</span><span class="size">L</span><span class="size">XL</span>
-        </div>
-        <a href="/products" class="view-btn">View</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img src="/hoodie4.webp" alt="Grey Wear A Hug Oversized Hoodie">
-      <div class="product-info">
-        <h4>Grey Wear A Hug Oversized Hoodie</h4>
-        <p class="price">Rs 1,599.00</p>
-        <div class="sizes">
-          <span class="size">S</span><span class="size">M</span><span class="size">L</span><span class="size">XL</span>
-        </div>
-        <a href="/products" class="view-btn">View</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img src="/hoodie5.webp" alt="Playboy Muse Oversized Hoodie">
-      <div class="product-info">
-        <h4>Playboy Muse Oversized Hoodie</h4>
-        <p class="price">Rs 1,599.00</p>
-        <div class="sizes">
-          <span class="size">S</span><span class="size">M</span><span class="size">L</span><span class="size">XL</span>
-        </div>
-        <a href="/products" class="view-btn">View</a>
-      </div>
-    </div>
+    {{/each}}
   </div>
 
   <br><br>
 
   <div class="Bottomwear">
+    {{#each bottomwear}}
     <div class="product-card">
-      <img src="/Bottomwear1.webp" alt="Black Loose Fit Joggers">
+      <img src="/{{this.image}}" alt="{{this.name}}">
       <div class="product-info">
-        <h4>Black Loose Fit Joggers</h4>
-        <p class="price">Rs 1,299.00</p>
+        <h4><a class="card-link" href="/products/{{this._id}}">{{this.name}}</a></h4>
+        <p class="price">₹{{money this.price}}</p>
         <div class="sizes">
-          <span class="size">S</span><span class="size">M</span><span class="size">L</span><span class="size">XL</span>
+          {{#each this.sizes}}<span class="size">{{this}}</span>{{/each}}
         </div>
-        <a href="/products" class="view-btn">View</a>
+        <a href="/products/{{this._id}}" class="view-btn">View</a>
       </div>
     </div>
-
-    <div class="product-card">
-      <img src="/Bottomwear2.webp" alt="Cloudy Everyday Joggers">
-      <div class="product-info">
-        <h4>Cloudy Everyday Joggers</h4>
-        <p class="price">Rs 1,399.00</p>
-        <div class="sizes">
-          <span class="size">S</span><span class="size">M</span><span class="size">L</span><span class="size">XL</span>
-        </div>
-        <a href="/products" class="view-btn">View</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img src="/Bottomwear3.webp" alt="Driftwood 6 Pockets Cargo Pant">
-      <div class="product-info">
-        <h4>Driftwood 6 Pockets Cargo Pant</h4>
-        <p class="price">Rs 1,399.00</p>
-        <div class="sizes">
-          <span class="size">S</span><span class="size">M</span><span class="size">L</span><span class="size">XL</span>
-        </div>
-        <a href="/products" class="view-btn">View</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img src="/Bottomwear4.webp" alt="Hustle The Untamed White Joggers">
-      <div class="product-info">
-        <h4>Hustle The Untamed White Joggers</h4>
-        <p class="price">Rs 1,599.00</p>
-        <div class="sizes">
-          <span class="size">S</span><span class="size">M</span><span class="size">L</span><span class="size">XL</span>
-        </div>
-        <a href="/products" class="view-btn">View</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <img src="/Bottomwear5.webp" alt="Espresso Brown Wide-Leg Sweatpants">
-      <div class="product-info">
-        <h4>Espresso Brown Wide-Leg Sweatpants</h4>
-        <p class="price">Rs 1,199.00</p>
-        <div class="sizes">
-          <span class="size">S</span><span class="size">M</span><span class="size">L</span><span class="size">XL</span>
-        </div>
-        <a href="/products" class="view-btn">View</a>
-      </div>
-    </div>
+    {{/each}}
   </div>
 
 </div>

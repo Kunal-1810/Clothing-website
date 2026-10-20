@@ -21,6 +21,13 @@ const bcrypt = require("bcryptjs");
 const connectDB = require("./db/conn");
 const User = require("./models/user");
 const Product = require("./models/product");
+const Order = require("./models/order");
+const { ensureSeeded } = require("./lib/seed");
+const cartLib = require("./lib/cart");
+const {
+  isObjectId, sizesFor, withSizes, cartCount, clampQty,
+  addToCart, setQty, removeItem, buildCart,
+} = cartLib;
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -39,6 +46,16 @@ app.use(express.static(static_path));
 app.set("view engine", "hbs");
 app.set("views", template_path);
 hbs.registerPartials(partials_path);
+
+// ---------- Template helpers ----------
+hbs.registerHelper("money", (n) => Number(n || 0).toLocaleString("en-IN"));
+hbs.registerHelper("date", (d) =>
+  d
+    ? new Date(d).toLocaleDateString("en-IN", {
+        day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata",
+      })
+    : ""
+);
 
 // ---------- Fail clearly if env vars are missing ----------
 const missingEnv = ["MONGODB_URI", "SESSION_SECRET"].filter(
@@ -66,13 +83,19 @@ if (missingEnv.length) {
 app.use(async (req, res, next) => {
   try {
     await connectDB();
-    next();
   } catch (err) {
     console.error("DB connection failed:", err);
-    res
+    return res
       .status(500)
       .send(debugErrors ? "DB error: " + err.message : "Something went wrong");
   }
+  // Add any missing starter products (once per server start). Never blocks the site.
+  try {
+    await ensureSeeded();
+  } catch (err) {
+    console.error("Seeding products failed:", err);
+  }
+  next();
 });
 
 app.use(
@@ -92,8 +115,21 @@ app.use(
 
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
+  res.locals.cartCount = cartCount(req.session.cart);
   next();
 });
+
+const saveSession = (req) =>
+  new Promise((resolve, reject) =>
+    req.session.save((err) => (err ? reject(err) : resolve()))
+  );
+
+const serverError = (res, label, err) => {
+  console.error(label, err);
+  res
+    .status(500)
+    .send(debugErrors ? "Error: " + err.message : "Something went wrong");
+};
 
 // Send people to login if they are not logged in, and remember where they wanted to go
 const requireLogin = (req, res, next) => {
@@ -104,53 +140,317 @@ const requireLogin = (req, res, next) => {
 const redirectIfLoggedIn = (req, res, next) =>
   req.session.user ? res.redirect("/") : next();
 
+const baseUrl = (req) => `${req.protocol}://${req.get("host")}`;
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const capitalise = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+
 // ---------- Pages ----------
-app.get("/", (req, res) => res.render("home"));
+const isHoodie = (p) => /^hoodie$/i.test(p.type || "") || /^hoodie/i.test(p.image || "");
+const isBottomwear = (p) =>
+  /^bottomwear$/i.test(p.type || "") || /^bottomwear/i.test(p.image || "");
+
+app.get("/", async (req, res) => {
+  let hoodies = [];
+  let bottomwear = [];
+  try {
+    const men = await Product.find({ category: "men" }).sort({ _id: 1 }).lean();
+    hoodies = withSizes(men.filter(isHoodie).slice(0, 5));
+    bottomwear = withSizes(men.filter(isBottomwear).slice(0, 5));
+  } catch (err) {
+    console.error("GET / failed:", err);
+  }
+  res.render("home", { hoodies, bottomwear });
+});
+
 app.get("/about", (req, res) => res.render("about"));
 app.get("/login", redirectIfLoggedIn, (req, res) => res.render("login"));
 app.get("/register", redirectIfLoggedIn, (req, res) => res.render("register"));
 
-// Category pages (men.html, women.html, kids.html live in src/templates/views)
-app.get("/men", (req, res) => res.sendFile(path.join(template_path, "men.html")));
-app.get("/women", (req, res) => res.sendFile(path.join(template_path, "women.html")));
-app.get("/kids", (req, res) => res.sendFile(path.join(template_path, "kids.html")));
+// ---------- Category pages: /men /women /kids (read from the database) ----------
+const CATEGORIES = {
+  men: {
+    heading: "Men",
+    tagline: "Hoodies, tees and jackets for men",
+    title: "Men's Clothing - Shop Shirts, T-Shirts & Jeans Online | The Clothing Loop",
+    description:
+      "Shop stylish men's clothing online. Browse shirts, t-shirts, jeans and more at The Clothing Loop with easy ordering.",
+    keywords:
+      "shop clothes online, clothing collection, shirts, jeans, t-shirts, menswear, best collections, best men collections, buy fashion online, men's fashion online, men's apparel, men's clothing, casual wear for men, formal wear for men, online shopping for men, trendy men's clothing, affordable men's fashion",
+  },
+  women: {
+    heading: "Women",
+    tagline: "Tops, dresses and everyday essentials",
+    title: "Women's Clothing - Shop Dresses, Tops & Jeans Online | The Clothing Loop",
+    description:
+      "Shop trendy women's clothing online. Browse dresses, tops, jeans and more at The Clothing Loop with easy ordering.",
+    keywords:
+      "shop clothes online, clothing collection, shirts, jeans, dresses, womenswear, best collections, best women collections, buy fashion online, women's fashion online, women's apparel, women's clothing, casual wear for women, formal wear for women, online shopping for women, trendy women's clothing, affordable women's fashion",
+  },
+  kids: {
+    heading: "Kids",
+    tagline: "Comfortable and colourful clothes for kids",
+    title: "Kids Clothing - Shop Boys & Girls Wear Online | The Clothing Loop",
+    description:
+      "Shop comfortable and stylish clothing for kids online. Browse tees, dresses, jeans and more for boys and girls at The Clothing Loop.",
+    keywords:
+      "shop clothes online, clothing collection, shirts, jeans, dresses, kidswear, best collections, best kids collections, buy fashion online, children's wear, kids fashion online, baby clothes, toddler clothing, kids apparel, boys clothing, girls clothing",
+  },
+};
 
-// ---------- Products (login required) ----------
-// Shop now + Search
-app.get("/products", requireLogin, async (req, res) => {
+Object.entries(CATEGORIES).forEach(([key, meta]) => {
+  // old links like /men.html keep working and point search engines to /men
+  app.get(`/${key}.html`, (req, res) => res.redirect(301, `/${key}`));
+
+  app.get(`/${key}`, async (req, res) => {
+    try {
+      const q = (req.query.q || "").toString().trim().slice(0, 60);
+      const filter = { category: key };
+      if (q) {
+        const rx = new RegExp(escapeRegex(q), "i");
+        filter.$or = [{ name: rx }, { type: rx }];
+      }
+      const products = await Product.find(filter).sort({ _id: 1 }).lean();
+      res.render("category", {
+        category: key,
+        meta,
+        query: q,
+        products,
+        canonical: `${baseUrl(req)}/${key}`,
+      });
+    } catch (err) {
+      serverError(res, `GET /${key} failed:`, err);
+    }
+  });
+});
+
+// ---------- Products (public: anyone can browse, login is needed at checkout) ----------
+app.get("/products", async (req, res) => {
   try {
-    const q = (req.query.q || "").trim();
+    const q = (req.query.q || "").toString().trim();
     let filter = {};
     if (q) {
       // escape regex special characters so the search can't break
-      const safe = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const rx = new RegExp(safe, "i");
+      const rx = new RegExp(escapeRegex(q), "i");
       filter = { $or: [{ name: rx }, { type: rx }, { category: rx }] };
     }
-    const products = await Product.find(filter).lean();
-    res.render("products", { products, query: q });
+    const products = await Product.find(filter).sort({ _id: 1 }).lean();
+    res.render("products", { products: withSizes(products), query: q });
   } catch (err) {
-    console.error("GET /products failed:", err);
-    res
-      .status(500)
-      .send(debugErrors ? "Error: " + err.message : "Something went wrong");
+    serverError(res, "GET /products failed:", err);
   }
 });
 
-// View button
-app.get("/products/:id", requireLogin, async (req, res) => {
+const describe = (p) =>
+  p.description ||
+  `${p.name} from The Clothing Loop's ${p.category || "latest"} collection. Comfortable, well-made and easy to wear every day.`;
+
+// Product details page: one page per product
+app.get("/products/:id", async (req, res) => {
   try {
-    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+    if (!isObjectId(req.params.id)) {
       return res.status(404).send("Product not found");
     }
     const product = await Product.findById(req.params.id).lean();
     if (!product) return res.status(404).send("Product not found");
-    res.render("product-details", { product });
+
+    const related = await Product.find({
+      category: product.category,
+      _id: { $ne: product._id },
+    })
+      .sort({ _id: 1 })
+      .limit(4)
+      .lean();
+
+    const base = baseUrl(req);
+    const description = describe(product);
+    const imageUrl = `${base}/${encodeURI(product.image)}`;
+    const canonical = `${base}/products/${product._id}`;
+
+    // structured data so Google can show price in search results
+    const jsonLd = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      image: imageUrl,
+      description,
+      category: product.category,
+      brand: { "@type": "Brand", name: "The Clothing Loop" },
+      offers: {
+        "@type": "Offer",
+        priceCurrency: "INR",
+        price: String(product.price),
+        availability: "https://schema.org/InStock",
+        url: canonical,
+      },
+    }).replace(/</g, "\\u003c");
+
+    res.render("product-details", {
+      product,
+      sizes: sizesFor(product),
+      description,
+      categoryLabel: capitalise(product.category),
+      related,
+      canonical,
+      imageUrl,
+      jsonLd,
+    });
   } catch (err) {
-    console.error("GET /products/:id failed:", err);
-    res
-      .status(500)
-      .send(debugErrors ? "Error: " + err.message : "Something went wrong");
+    serverError(res, "GET /products/:id failed:", err);
+  }
+});
+
+// ---------- Cart (works for guests too; it lives in the session) ----------
+app.get("/cart", async (req, res) => {
+  try {
+    const cart = await buildCart(req.session);
+    res.render("cart", { cart });
+  } catch (err) {
+    serverError(res, "GET /cart failed:", err);
+  }
+});
+
+app.post("/cart/add", async (req, res) => {
+  const wantsJson = req.accepts(["html", "json"]) === "json";
+  const fail = (status, message) =>
+    wantsJson ? res.status(status).json({ ok: false, error: message }) : res.redirect(
+      isObjectId(req.body.productId) ? `/products/${req.body.productId}` : "/products"
+    );
+  try {
+    const { productId, size } = req.body;
+    if (!isObjectId(productId)) return fail(400, "Invalid product");
+
+    const product = await Product.findById(productId).lean();
+    if (!product) return fail(404, "Product not found");
+    if (!sizesFor(product).includes(size)) return fail(400, "Please select a size");
+
+    addToCart(req.session, String(product._id), size, clampQty(req.body.qty));
+    await saveSession(req);
+
+    if (wantsJson) return res.json({ ok: true, count: cartCount(req.session.cart) });
+    res.redirect(req.body.buyNow ? "/checkout" : "/cart");
+  } catch (err) {
+    console.error("POST /cart/add failed:", err);
+    if (wantsJson) return res.status(500).json({ ok: false, error: "Something went wrong" });
+    res.status(500).send("Something went wrong");
+  }
+});
+
+app.post("/cart/update", async (req, res) => {
+  try {
+    const { productId, size } = req.body;
+    if (isObjectId(productId)) {
+      setQty(req.session, productId, size, parseInt(req.body.qty, 10) || 0);
+      await saveSession(req);
+    }
+    res.redirect("/cart");
+  } catch (err) {
+    serverError(res, "POST /cart/update failed:", err);
+  }
+});
+
+app.post("/cart/remove", async (req, res) => {
+  try {
+    const { productId, size } = req.body;
+    if (isObjectId(productId)) {
+      removeItem(req.session, productId, size);
+      await saveSession(req);
+    }
+    res.redirect("/cart");
+  } catch (err) {
+    serverError(res, "POST /cart/remove failed:", err);
+  }
+});
+
+// ---------- Checkout (login required) ----------
+app.get("/checkout", requireLogin, async (req, res) => {
+  try {
+    const cart = await buildCart(req.session);
+    if (!cart.lines.length) return res.redirect("/cart");
+    res.render("checkout", { cart, form: { fullName: req.session.user.name } });
+  } catch (err) {
+    serverError(res, "GET /checkout failed:", err);
+  }
+});
+
+app.post("/checkout", requireLogin, async (req, res) => {
+  try {
+    const cart = await buildCart(req.session);
+    if (!cart.lines.length) return res.redirect("/cart");
+
+    const pick = (k, max = 120) => String(req.body[k] || "").trim().slice(0, max);
+    const form = {
+      fullName: pick("fullName", 80),
+      phone: pick("phone", 15).replace(/[\s-]/g, ""),
+      line1: pick("line1", 200),
+      city: pick("city", 60),
+      state: pick("state", 60),
+      pincode: pick("pincode", 6),
+    };
+
+    let error = null;
+    if (!form.fullName || !form.line1 || !form.city || !form.state) {
+      error = "Please fill in all the delivery details";
+    } else if (!/^(\+91)?[6-9]\d{9}$/.test(form.phone)) {
+      error = "Enter a valid 10-digit mobile number";
+    } else if (!/^\d{6}$/.test(form.pincode)) {
+      error = "Enter a valid 6-digit PIN code";
+    }
+    if (error) return res.status(400).render("checkout", { cart, form, error });
+
+    const order = await Order.create({
+      user: req.session.user.id,
+      items: cart.lines.map((l) => ({
+        product: l.productId,
+        name: l.name,
+        image: l.image,
+        size: l.size,
+        price: l.price,
+        qty: l.qty,
+      })),
+      shippingAddress: form,
+      paymentMethod: "cod",
+      subtotal: cart.subtotal,
+      shipping: cart.shipping,
+      total: cart.total,
+    });
+
+    req.session.cart = [];
+    await saveSession(req);
+    res.redirect(`/orders/${order._id}?placed=1`);
+  } catch (err) {
+    serverError(res, "POST /checkout failed:", err);
+  }
+});
+
+// ---------- Orders (login required) ----------
+const decorateOrder = (o) => ({
+  ...o,
+  orderNo: String(o._id).slice(-8).toUpperCase(),
+  items: o.items.map((i) => ({ ...i, lineTotal: i.price * i.qty })),
+});
+
+app.get("/orders", requireLogin, async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.session.user.id })
+      .sort({ createdAt: -1 })
+      .lean();
+    res.render("orders", { orders: orders.map(decorateOrder) });
+  } catch (err) {
+    serverError(res, "GET /orders failed:", err);
+  }
+});
+
+app.get("/orders/:id", requireLogin, async (req, res) => {
+  try {
+    if (!isObjectId(req.params.id)) return res.status(404).send("Order not found");
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.session.user.id,
+    }).lean();
+    if (!order) return res.status(404).send("Order not found");
+    res.render("order", { order: decorateOrder(order), placed: req.query.placed === "1" });
+  } catch (err) {
+    serverError(res, "GET /orders/:id failed:", err);
   }
 });
 
@@ -199,13 +499,15 @@ app.post("/register", redirectIfLoggedIn, async (req, res) => {
       password: hashed,
     });
 
-    // regenerate() wipes the session, so grab returnTo first
+    // regenerate() wipes the session, so keep returnTo and the cart first
     const returnTo = req.session.returnTo || "/products";
+    const cart = req.session.cart;
     req.session.regenerate((err) => {
       if (err) {
         return res.render("register", { error: "Something went wrong. Try again." });
       }
       req.session.user = { id: user._id, name: user.name, email: user.email };
+      if (cart && cart.length) req.session.cart = cart;
       req.session.save(() => res.redirect(returnTo));
     });
   } catch (err) {
@@ -229,13 +531,15 @@ app.post("/login", redirectIfLoggedIn, async (req, res) => {
       return res.render("login", { error: "Invalid email or password" });
     }
 
-    // regenerate() wipes the session, so grab returnTo first
+    // regenerate() wipes the session, so keep returnTo and the cart first
     const returnTo = req.session.returnTo || "/products";
+    const cart = req.session.cart;
     req.session.regenerate((err) => {
       if (err) {
         return res.render("login", { error: "Login failed. Try again." });
       }
       req.session.user = { id: user._id, name: user.name, email: user.email };
+      if (cart && cart.length) req.session.cart = cart;
       req.session.save(() => res.redirect(returnTo));
     });
   } catch (err) {
