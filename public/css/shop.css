@@ -219,6 +219,19 @@ a.ci-name:hover { text-decoration: underline; }
   .two-col { grid-template-columns: 1fr; gap: 0; }
 }
 
+/* ---------- /products page: cards in a wrapping grid ---------- */
+.all-products {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 20px 40px 8px;
+}
+.all-products .product-card { margin-left: 0; }
+.all-products .no-results { color: #666; }
+@media (max-width: 600px) {
+  .all-products { padding: 16px; justify-content: center; }
+}
+
 /* footer, same as the other pages */
 footer {
   margin-top: 30px;
