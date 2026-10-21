@@ -40,6 +40,49 @@ const partials_path = path.join(__dirname, "./templates/partials");
 
 app.set("trust proxy", 1);
 
+// Base URL of the site. Optionally set SITE_URL in Vercel env vars
+// (e.g. https://clothing-website-delta-three.vercel.app) to force a fixed domain.
+const baseUrl = (req) =>
+  (process.env.SITE_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+
+// ---------- robots.txt and sitemap.xml (served by Express, before static files) ----------
+app.get("/robots.txt", (req, res) => {
+  res
+    .type("text/plain")
+    .send(
+      `User-agent: *\nAllow: /\nDisallow: /cart\nDisallow: /checkout\nDisallow: /orders\nDisallow: /profile\n\nSitemap: ${baseUrl(req)}/sitemap.xml\n`
+    );
+});
+
+app.get("/sitemap.xml", async (req, res) => {
+  const base = baseUrl(req);
+  const urls = [
+    "/",
+    "/men",
+    "/women",
+    "/kids",
+    "/products",
+    "/about",
+  ].map((p) => `${base}${p === "/" ? "/" : p}`);
+
+  // Add every product page; if the DB is unavailable, still serve the static pages
+  try {
+    await connectDB();
+    const products = await Product.find({}, "_id").lean();
+    products.forEach((p) => urls.push(`${base}/products/${p._id}`));
+  } catch (err) {
+    console.error("Sitemap: could not load products:", err);
+  }
+
+  const xml =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    urls.map((u) => `  <url><loc>${u}</loc></url>`).join("\n") +
+    `\n</urlset>\n`;
+
+  res.type("application/xml").send(xml);
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(static_path));
@@ -140,7 +183,6 @@ const requireLogin = (req, res, next) => {
 const redirectIfLoggedIn = (req, res, next) =>
   req.session.user ? res.redirect("/") : next();
 
-const baseUrl = (req) => `${req.protocol}://${req.get("host")}`;
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const capitalise = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
